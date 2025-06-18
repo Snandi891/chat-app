@@ -10,26 +10,27 @@ const server = http.createServer(app);
 // Middleware
 app.use(cors());
 
-// Create Socket.IO server
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins — change in production if needed
+    origin: "*", // Allow all origins — restrict in production
     methods: ["GET", "POST"],
   },
 });
 
-// Handle socket connection
 io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
   socket.on("send_message", (data) => {
-    if (typeof data.user === "string" && typeof data.text === "string") {
-      const message = {
-        id: Date.now(), // Simple ID
-        user: data.user,
-        text: data.text,
-        time: new Date().toLocaleTimeString(),
-      };
+    // Accept either text or image messages
+    const message = {
+      id: Date.now(),
+      user: data.user,
+      text: data.text || "",
+      image: data.image || null, // <-- ✅ NEW: support for image
+      time: new Date().toLocaleTimeString(),
+    };
+
+    if (typeof message.user === "string" && (message.text || message.image)) {
       console.log("📨 Message received:", message);
       io.emit("receive_message", message);
     } else {
