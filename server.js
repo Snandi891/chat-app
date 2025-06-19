@@ -12,7 +12,7 @@ app.use(cors());
 
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allow all origins — restrict in production
+    origin: "*", // ⚠️ In production, replace with your frontend domain
     methods: ["GET", "POST"],
   },
 });
@@ -21,20 +21,25 @@ io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
   socket.on("send_message", (data) => {
-    // Accept either text or image messages
     const message = {
       id: Date.now(),
       user: data.user,
       text: data.text || "",
-      image: data.image || null, // <-- ✅ NEW: support for image
+      image: data.image || null,
+      video: data.video || null,
+      document: data.document || null,
       time: new Date().toLocaleTimeString(),
     };
 
-    if (typeof message.user === "string" && (message.text || message.image)) {
+    const isValid =
+      typeof message.user === "string" &&
+      (message.text || message.image || message.video || message.document);
+
+    if (isValid) {
       console.log("📨 Message received:", message);
       io.emit("receive_message", message);
     } else {
-      console.log("❌ Invalid message format");
+      console.log("❌ Invalid message format", data);
     }
   });
 
