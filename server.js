@@ -28,7 +28,7 @@ io.on("connection", (socket) => {
       image: data.image || null,
       video: data.video || null,
       document: data.document || null,
-      time: new Date().toLocaleTimeString(),
+      timestamp: data.timestamp || new Date().toISOString(), // <-- use this
     };
 
     const isValid =
